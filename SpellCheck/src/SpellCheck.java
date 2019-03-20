@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
 
 /*
  * Assignment 6  - Java Collections
@@ -23,10 +24,12 @@ public class SpellCheck {
 	@SuppressWarnings({ "resource" })
 	public static void main(String[] args){
 		File file2SpellCheck = null;
+		int numberOfMisspelledWords = 0;
 		try {
 			File dictionaryFile = null;
 			Scanner fsc;
-			Map<String, Object> map = new HashMap<String, Object>();
+			HashMap<String, Integer> dictionaryMap = new HashMap<String, Integer>();
+			HashMap<String, Integer> misspelledMap = new HashMap<String, Integer>();
 			String line = null;
 			String[] wordsArray;
 			
@@ -68,7 +71,7 @@ public class SpellCheck {
 				wordsArray = line.split(" ");
 				// Add a word
 				for(int x = 0; x < wordsArray.length; x++) {
-					map.put(wordsArray[x], null);
+					dictionaryMap.put(wordsArray[x], 0);
 				}
 			}
 			fsc = new Scanner(file2SpellCheck);
@@ -78,11 +81,13 @@ public class SpellCheck {
 				wordsArray = line.split(" ");
 				// Add a word
 				for(int x = 0; x < wordsArray.length; x++) {
-					if(spellCheck(wordsArray[x], map)) {
-						System.out.println(wordsArray[x] + "is misspelled");
+					if(!spellCheck(trimWord(wordsArray[x]), dictionaryMap, misspelledMap)) {
+						numberOfMisspelledWords++;
+						System.out.println(trimWord(wordsArray[x]) + " (" + misspelledMap.get(trimWord(wordsArray[x])) + ")" );
 					}
 				}
 			}
+			System.out.println("Total Unique misspelled words: " + numberOfMisspelledWords);
 			fsc.close();
 			
 		}
@@ -92,11 +97,23 @@ public class SpellCheck {
 
 	}
 
-	private static boolean spellCheck(String word, Map<String, Object> map) {
+	private static boolean spellCheck(String word, HashMap<String, Integer> dictionaryMap, HashMap<String, Integer> misspelledMap) {
 		// Check for the presence of a word
-		if(map.containsKey(word)) {
+		if(dictionaryMap.containsKey(word)) {
 			return true;
 		}
+		if(misspelledMap.containsKey(word)) {
+				misspelledMap.put(word,(misspelledMap.get(word)+1));
+		}
+		else{
+			misspelledMap.put(word,1);
+		}
+		//misspelledMap.put(word,misspelledMap.getOrDefault(word,0)+1);
 		return false;
+	}
+	
+	private static String trimWord(String word) {
+		word = word.replaceAll("[^a-zA-Z]", "").toLowerCase().trim();
+		return word;
 	}
 }
